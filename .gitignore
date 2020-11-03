@@ -1,0 +1,16 @@
+.env
+.vscode
+
+__pycache__
+
+# roms data
+*.sfc
+*.sha
+
+# too big
+*.zip
+*.mp4
+
+# dont wanna share
+*.csv
+*.json

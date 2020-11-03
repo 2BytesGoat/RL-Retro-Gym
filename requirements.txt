@@ -1,0 +1,4 @@
+gym-retro
+opencv-python
+pynput
+pandas
