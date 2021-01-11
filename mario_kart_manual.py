@@ -1,13 +1,15 @@
 import time
 import retro
 import pandas as pd
+from pathlib import Path
 from pynput import keyboard
 from gym.wrappers import Monitor
 
 class ManualController():
     def __init__(self, env, rec_path='./video'):
         self.rec_path = rec_path
-        self.env = Monitor(env, rec_path, force=True, 
+        self.rec_folder = Path(rec_path) / str(int(time.time()))
+        self.env = Monitor(env, self.rec_folder, force=True, 
                     video_callable=lambda episode_id: True)
         self._delay_ms = 15 # magic number for displaying the game real-time
         self.record = True
@@ -16,6 +18,7 @@ class ManualController():
         self.key_mapping = self._get_key_mapping(env.buttons)
 
     def _get_key_mapping(self, buttons):
+        # TODO: add quit button
         key_mapping = {
             'w': buttons.index('UP'),
             's': buttons.index('DOWN'),
@@ -48,7 +51,7 @@ class ManualController():
             self.episode_summary = pd.concat([self.episode_summary, info_df])
 
     def _save_summary(self, episode_nb=0):
-        self.episode_summary.to_csv(f'{self.rec_path}/openaigym.episode_summary.{episode_nb}.csv')
+        self.episode_summary.to_csv(f'{self.rec_folder}/openaigym.episode_summary.{episode_nb}.csv')
 
     def on_press(self, key):
         if key == keyboard.Key.esc:
