@@ -7,10 +7,9 @@ __pycache__
 *.sfc
 *.sha
 
-# too big
+# dataset files
 *.zip
 *.mp4
-
-# dont wanna share
+*.png
 *.csv
 *.json

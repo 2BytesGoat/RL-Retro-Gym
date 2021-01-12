@@ -1,7 +1,7 @@
 import cv2
 from pathlib import Path
 
-video_path = Path('./data/raw/videoplayback.mp4')
+video_path = Path('./data/raw/openaigym.video.0.6676.video000000.mp4')
 max_frames = 2000
 
 dump_path = video_path.parents[1] / 'splitted'
