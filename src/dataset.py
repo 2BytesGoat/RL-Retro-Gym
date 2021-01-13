@@ -7,10 +7,10 @@ from pathlib import Path
 from skimage import io
 
 class SuperMarioKartDataset(torch.utils.data.Dataset):
-    def __init__(self, root_dir, transforms=[]):
-        self.root_dir = root_dir
+    def __init__(self, meta_txt, transforms=[]):
         self.transforms = transforms
-        self.image_file_paths = self._get_image_paths_from_dir(root_dir)
+        self.image_file_paths = self._meta_to_list(meta_txt)
+        self.image_shape = self.__getitem__(0).shape # assume all frames have the same shape
 
     def __len__(self):
         return len(self.image_file_paths)
@@ -24,5 +24,12 @@ class SuperMarioKartDataset(torch.utils.data.Dataset):
 
         return image_sample
 
-    def _get_image_paths_from_dir(self, root_dir, suffix='png'):
-        return Path(root_dir).glob(f'*.{suffix}')
+    def _meta_to_list(self, meta_txt):
+        """
+        Takes a text file of filenames and makes a list of filenames
+        """
+        with open(meta_txt, encoding="utf-8") as f:
+            files = f.readlines()
+
+        files = [f.rstrip() for f in files]
+        return files

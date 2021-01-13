@@ -1,0 +1,9 @@
+{
+    "pca": {
+        "roi": [0, 107, 0, 256],
+        "grayscale": true,
+        "latent_dim": 100,
+        "batch_size": 16,
+        "n_epochs": 10
+    }
+}

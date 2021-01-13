@@ -1,19 +1,16 @@
 import cv2
 from functools import partial
+from torchvision import transforms
 
-def get_transforms(roi=None, grayscale=False):
+def get_transforms(roi=None, grayscale=False, to_tensor=True):
     transofrms = []
     if roi is not None:
-        transofrms.append(frame_to_roi_partial(roi))
+        transofrms.append(frame_to_roi(roi))
     if grayscale:
         transofrms.append(frame_to_grayscale)
+    if to_tensor:
+        transofrms.append(transforms.ToTensor())
     return transofrms
-
-def apply_transforms(frame, transforms):
-    tmp_frame = frame.copy()
-    for trans in transforms:
-        tmp_frame = trans(tmp_frame)
-    return tmp_frame
 
 def frame_to_grayscale(frame):
     return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
