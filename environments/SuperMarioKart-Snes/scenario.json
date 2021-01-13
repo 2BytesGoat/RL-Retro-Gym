@@ -1,0 +1,24 @@
+{
+  "done": {
+    "variables": {
+      "cart_lap_nb": {
+        "op": "equal",
+        "reference": 133
+      },
+      "map_time": {
+        "op": "equal",
+        "reference": 80
+      }
+    }
+  },
+  "reward": {
+    "variables": {
+      "cart_position_x": {
+        "reward": 1.0
+      },
+      "cart_speed": {
+        "reward": 0.01
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "info": {
+    "cart_coins": {
+      "address": 8261120,
+      "type": "=u1"
+    },
+    "cart_has_item": {
+      "address": 8260976,
+      "type": "=u2"
+    },
+    "cart_is_coliding": {
+      "address": 8261714,
+      "type": "=u1"
+    },
+    "cart_lap_nb": {
+      "address": 8261825,
+      "type": "=u1"
+    },
+    "cart_last_item": {
+      "address": 8260988,
+      "type": "=u2"
+    },
+    "cart_place": {
+      "address": 8261696,
+      "type": "=u1"
+    },
+    "cart_position_x": {
+      "address": 4288,
+      "type": "=u1"
+    },
+    "cart_speed": {
+      "address": 8261866,
+      "type": "=u2"
+    },
+    "cart_status": {
+      "address": 8261792,
+      "type": "=u1"
+    },
+    "map_surface": {
+      "address": 8261806,
+      "type": "=u1"
+    },
+    "map_time": {
+      "address": 258,
+      "type": "=d3"
+    }
+  }
+}

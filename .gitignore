@@ -8,8 +8,6 @@ __pycache__
 *.sha
 
 # dataset files
+video/*
+data/*
 *.zip
-*.mp4
-*.png
-*.csv
-*.json
