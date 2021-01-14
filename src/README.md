@@ -14,4 +14,5 @@
 # Refferences
 [Principal Component Analysis - DataScienceHandbook](https://jakevdp.github.io/PythonDataScienceHandbook/05.09-principal-component-analysis.html) <- theory for how PCA works \
 [MLP Autoencoder Keras - Stackbuse](https://stackabuse.com/autoencoders-for-image-reconstruction-in-python-and-keras/) <- still PCA but done in keras and ez to modify\
-[Conv2D Autoencoder Keras - Keras.io](https://blog.keras.io/building-autoencoders-in-keras.html)
+[Conv2D Autoencoder Keras - Keras.io](https://blog.keras.io/building-autoencoders-in-keras.html)\
+[EnhanceNet Super Resolution Loss - Arxiv](https://arxiv.org/pdf/1612.07919.pdf) <- losses for contextual fidelity

@@ -2,6 +2,7 @@ import json
 import argparse
 import numpy as np
 from pathlib import Path
+from skimage.io import imsave
 
 import torch
 import torch.nn as nn
@@ -14,15 +15,15 @@ from src.modeling import autoencoders
 """
 ToDos:
     1. Add early stopping
-    2. Save several images to show how good encoding is
-    3. Create a loop in order to experiment with different enc lengths
-    4. Add function for saving model weights
+    2. Create a loop in order to experiment with different enc lengths
+    3. Add function for saving model weights
 """
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_name", required=True)
-    parser.add_argument("--data_path", default=None, type=Path)
+    parser.add_argument("--data_path", required=True, type=Path)
+    parser.add_argument("--save_path", default=None, type=Path)
     args = parser.parse_args()
     return args
 
@@ -45,9 +46,17 @@ def main():
     valid_loader = DataLoader(train_set, batch_size=1, num_workers=4)
 
     # ===================Export some val images=====================
+    if not args.save_path:
+        save_path = args.data_path / 'results'
+    else:
+        save_path = args.save_path
+    save_path.mkdir(exist_ok=True)
+    # TODO: make a function for exporting n images
     for i, x_t in enumerate(valid_loader):
         # save original files to have comparions
-        break
+        imsave(save_path / f'sample_{i}.png', x_t.numpy()[0][0], check_contrast=False)
+        if i == 5:
+            break
 
     # ===================Instantiate models=====================
     img_shape = train_set.image_shape
@@ -58,6 +67,8 @@ def main():
 
     for epoch in range(1, config['n_epochs'] + 1):
         train_losses, valid_losses = [], []
+        epc_save_path = save_path / f'epoch_{epoch}'
+        epc_save_path.mkdir(exist_ok=True)
         # ===================Training=====================
         for x_t in train_loader:
             x_t = x_t.cuda()
@@ -69,14 +80,17 @@ def main():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
         # ===================Validation=====================
-        for x_t in valid_loader:
+        for i, x_t in enumerate(valid_loader):
             x_t = x_t.cuda()
             
             with torch.no_grad():
                 encoding, decoding = network(x_t)
                 loss = criterion(decoding, x_t)
+
+            if i < 10:
+                decoded_img = decoding.cpu().numpy()[0][0].astype(np.uint8)
+                imsave(epc_save_path / f'decoding_{i}.png', decoded_img, check_contrast=False)
 
             valid_losses.append(loss.item())
 
