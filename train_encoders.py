@@ -24,11 +24,16 @@ ToDos:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config_name", required=True)
     parser.add_argument("--data_path", required=True, type=Path)
     parser.add_argument("--save_path", default=None, type=Path)
-    parser.add_argument("--viz_samples", default=5, type=int)
+    parser.add_argument("--load_path", default=None, type=Path)
+
+    parser.add_argument("--config_name", required=True)
     parser.add_argument("--encoder_type", required=True, type=str)
+    
+    parser.add_argument("--viz_samples", default=5, type=int)
+    parser.add_argument("--patience", default=10, type=int)
+    
     args = parser.parse_args()
     return args
 
@@ -67,8 +72,11 @@ def main():
     optimizer = torch.optim.Adam(network.parameters())
     criterion = nn.MSELoss()
 
+    load_path = args.load_path
+    if load_path and load_path.exists():
+        network.load_state_dict(torch.load(load_path / "best_encoder.pt"))
+
     best_val_loss = 999
-    max_bad_epocs = 3
     cnt_bad_epocs = 0
 
     for epoch in range(1, config['n_epochs'] + 1):
@@ -117,7 +125,7 @@ def main():
         if best_val_loss < avg_val_loss:
             cnt_bad_epocs += 1
 
-        if cnt_bad_epocs == max_bad_epocs:
+        if cnt_bad_epocs == args.patience:
             print('Network is not improving. Stopping training...') 
             break
 
