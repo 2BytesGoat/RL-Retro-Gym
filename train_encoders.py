@@ -9,6 +9,8 @@ import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
 from torchvision.transforms import ToPILImage
 
+# from piq import SSIMLoss # image quality losses
+
 from src.dataset import SuperMarioKartDataset
 from src.processing import get_transforms
 from src.modeling import autoencoders
@@ -17,7 +19,6 @@ from src.modeling import autoencoders
 ToDos:
     1. Add context loss
     2. Add noise loss
-    3. Try MLP network 
     4. Use pretrained VGG layers
 """
 
@@ -27,13 +28,14 @@ def parse_args():
     parser.add_argument("--data_path", required=True, type=Path)
     parser.add_argument("--save_path", default=None, type=Path)
     parser.add_argument("--viz_samples", default=5, type=int)
+    parser.add_argument("--encoder_type", required=True, type=str)
     args = parser.parse_args()
     return args
 
 def main():
     args = parse_args()
     config = load_json('./configs', args.config_name)
-    config = config['pca'] # take config info for PCA
+    config = config[args.encoder_type] # take config info for PCA
 
     # ===================Create data loaders=====================
     transforms = get_transforms(roi=config['roi'], grayscale=config['grayscale'])
@@ -50,21 +52,17 @@ def main():
 
     # ===================Export some val images=====================
     if not args.save_path:
-        save_path = args.data_path / 'results'
+        save_path = args.data_path / (args.encoder_type + '_results')
     else:
         save_path = args.save_path
     save_path.mkdir(exist_ok=True)
-    
-    for i, x_t in enumerate(valid_loader):
-        # save original files to have comparions
-        sample_to_np = np.array(ToPILImage()(x_t[0]))
-        imsave(save_path / f'sample_{i}.png', sample_to_np)
-        if i == args.viz_samples:
-            break
 
     # ===================Instantiate models=====================
     img_shape = train_set.image_shape
-    network = autoencoders.PCA(img_shape, config['latent_dim']).cuda()
+    if args.encoder_type == 'pca':
+        network = autoencoders.PCA(img_shape, config['latent_dim']).cuda()
+    elif args.encoder_type == 'mlp':
+        network = autoencoders.MLP(img_shape, config['latent_dim']).cuda()
 
     optimizer = torch.optim.Adam(network.parameters())
     criterion = nn.MSELoss()
@@ -97,8 +95,10 @@ def main():
                 loss = criterion(decoding, x_t)
 
             if i < args.viz_samples: # display only the first 10 samples
-                sample_to_np = np.array(ToPILImage()(decoding.cpu()[0]))
-                imsave(epc_save_path / f'decoding_{i}.png', sample_to_np)
+                input_image = np.array(ToPILImage()(x_t.cpu()[0]))
+                decoded_image = np.array(ToPILImage()(decoding.cpu()[0]))
+                merged_image = np.concatenate((input_image, decoded_image))
+                imsave(epc_save_path / f'result_{i}.png', merged_image)
 
             valid_losses.append(loss.item())
 
