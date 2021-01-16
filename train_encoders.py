@@ -7,6 +7,7 @@ from skimage.io import imsave
 import torch
 import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
+from torchvision.transforms import ToPILImage
 
 from src.dataset import SuperMarioKartDataset
 from src.processing import get_transforms
@@ -25,6 +26,7 @@ def parse_args():
     parser.add_argument("--config_name", required=True)
     parser.add_argument("--data_path", required=True, type=Path)
     parser.add_argument("--save_path", default=None, type=Path)
+    parser.add_argument("--viz_samples", default=5, type=int)
     args = parser.parse_args()
     return args
 
@@ -55,8 +57,9 @@ def main():
     
     for i, x_t in enumerate(valid_loader):
         # save original files to have comparions
-        imsave(save_path / f'sample_{i}.png', x_t.numpy()[0][0], check_contrast=False)
-        if i == 5:
+        sample_to_np = np.array(ToPILImage()(x_t[0]))
+        imsave(save_path / f'sample_{i}.png', sample_to_np)
+        if i == args.viz_samples:
             break
 
     # ===================Instantiate models=====================
@@ -93,9 +96,9 @@ def main():
                 encoding, decoding = network(x_t)
                 loss = criterion(decoding, x_t)
 
-            if i < 10:
-                decoded_img = decoding.cpu().numpy()[0][0].astype(np.uint8)
-                imsave(epc_save_path / f'decoding_{i}.png', decoded_img, check_contrast=False)
+            if i < args.viz_samples: # display only the first 10 samples
+                sample_to_np = np.array(ToPILImage()(decoding.cpu()[0]))
+                imsave(epc_save_path / f'decoding_{i}.png', sample_to_np)
 
             valid_losses.append(loss.item())
 
