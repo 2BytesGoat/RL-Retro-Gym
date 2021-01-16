@@ -14,9 +14,10 @@ from src.modeling import autoencoders
 
 """
 ToDos:
-    1. Add early stopping
-    2. Create a loop in order to experiment with different enc lengths
-    3. Add function for saving model weights
+    1. Add context loss
+    2. Add noise loss
+    3. Try MLP network 
+    4. Use pretrained VGG layers
 """
 
 def parse_args():
@@ -51,7 +52,7 @@ def main():
     else:
         save_path = args.save_path
     save_path.mkdir(exist_ok=True)
-    # TODO: make a function for exporting n images
+    
     for i, x_t in enumerate(valid_loader):
         # save original files to have comparions
         imsave(save_path / f'sample_{i}.png', x_t.numpy()[0][0], check_contrast=False)
@@ -64,6 +65,10 @@ def main():
 
     optimizer = torch.optim.Adam(network.parameters())
     criterion = nn.MSELoss()
+
+    best_val_loss = 999
+    max_bad_epocs = 3
+    cnt_bad_epocs = 0
 
     for epoch in range(1, config['n_epochs'] + 1):
         train_losses, valid_losses = [], []
@@ -98,6 +103,20 @@ def main():
         avg_val_loss = round(np.mean(valid_losses), 4)
 
         print(f'Epoch - {epoch} | Avg Train Loss - {avg_trn_loss} | Avg Val Loss - {avg_val_loss}')
+
+        # ===================Checkpointing=====================
+        if best_val_loss > avg_val_loss:
+            cnt_bad_epocs = 0
+            best_val_loss = avg_val_loss
+            torch.save(network.state_dict(), save_path / 'best_encoder.pt')
+        
+        # ===================Early stopping=====================
+        if best_val_loss < avg_val_loss:
+            cnt_bad_epocs += 1
+
+        if cnt_bad_epocs == max_bad_epocs:
+            print('Network is not improving. Stopping training...') 
+            break
 
 def load_json(fdir, name):
     """

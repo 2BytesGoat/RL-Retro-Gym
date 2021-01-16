@@ -1,22 +1,20 @@
 # Useful info
 ## Create local environment
-`python -m virtualenv .env` <-- *creates default environment* \
-`.env\Scripts\activate` <-- *activate environment* \
+`python -m virtualenv .env` <- *creates default environment* \
+`.env\Scripts\activate` <- *activate environment* \
 `pip install -r requirements.txt` <-- *install requirements*
 
 ## List supported roms
-`from gym import envs; print(envs.registry.all())` <-- *Python code for gym* \
-`import retro; retro.data.list_games()` <-- *Python code for gym retro* 
+`from gym import envs; print(envs.registry.all())` <- *Python code for gym* \
+`import retro; retro.data.list_games()` <- *Python code for gym retro* 
 
 ## Loading local roms
 `python -m retro.import .\<path_to_roms_folder>\`
 
 ## How to get roms
-[Old Atari Games - AtariMania](http://www.atarimania.com/rom_collection_archive_atari_2600_roms.html) <-- *some free Atari games*\
-[Sega Genesis Classics - Steam](https://store.steampowered.com/agecheck/app/34270/) <-- *buy games and load them into retro* \
-[Ripping Roms from Cartriges - RetroGameBoards](https://www.retrogameboards.com/t/the-ripping-thread-how-to-build-your-own-legit-retro-rom-library/98) <-- *how to extract games from physical cartriges*
-
----
+[Old Atari Games - AtariMania](http://www.atarimania.com/rom_collection_archive_atari_2600_roms.html) <- *some free Atari games*\
+[Sega Genesis Classics - Steam](https://store.steampowered.com/agecheck/app/34270/) <- *buy games and load them into retro* \
+[Ripping Roms from Cartriges - RetroGameBoards](https://www.retrogameboards.com/t/the-ripping-thread-how-to-build-your-own-legit-retro-rom-library/98) <- *how to extract games from physical cartriges*
 
 ## Add custom roms
 ### *Note to tinkers*: 
@@ -39,6 +37,5 @@ I've also provided my own files which should work if you allready have a *rom.sf
 
 # References
 
-[Lucas Thompson - Youtube](https://www.youtube.com/channel/UCLA_tAh0hX9bjl6DfCe9OLw) - 
-retro-gym integration and general good starting point
+[Lucas Thompson - Youtube](https://www.youtube.com/channel/UCLA_tAh0hX9bjl6DfCe9OLw) <- retro-gym integration and general good starting point
 
