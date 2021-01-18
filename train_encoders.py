@@ -9,7 +9,7 @@ import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
 from torchvision.transforms import ToPILImage
 
-# from piq import SSIMLoss # image quality losses
+from piq import SSIMLoss # image quality losses
 
 from src.dataset import SuperMarioKartDataset
 from src.processing import get_transforms
@@ -17,9 +17,11 @@ from src.modeling import autoencoders
 
 """
 ToDos:
-    1. Add context loss
+    1. Add context loss + MSE
     2. Add noise loss
+    3. Refactor code
     4. Use pretrained VGG layers
+    5. Consider adding FOV - accuracy decreases with distance
 """
 
 def parse_args():
@@ -70,7 +72,8 @@ def main():
         network = autoencoders.MLP(img_shape, config['latent_dim']).cuda()
 
     optimizer = torch.optim.Adam(network.parameters())
-    criterion = nn.MSELoss()
+    ssim_loss = SSIMLoss(data_range=1.)
+    mse_loss = nn.MSELoss()
 
     load_path = args.load_path
     if load_path and load_path.exists():
@@ -88,7 +91,7 @@ def main():
             x_t = x_t.cuda()
 
             encoding, decoding = network(x_t)
-            loss = criterion(decoding, x_t)
+            loss = mse_loss(decoding, x_t)
             train_losses.append(loss.item())
 
             optimizer.zero_grad()
@@ -100,7 +103,7 @@ def main():
             
             with torch.no_grad():
                 encoding, decoding = network(x_t)
-                loss = criterion(decoding, x_t)
+                loss = mse_loss(decoding, x_t)
 
             if i < args.viz_samples: # display only the first 10 samples
                 input_image = np.array(ToPILImage()(x_t.cpu()[0]))
