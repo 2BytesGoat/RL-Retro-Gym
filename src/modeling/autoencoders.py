@@ -47,7 +47,7 @@ class MLP(nn.Module):
             nn.Linear(self.latent_dim, 512),
             nn.ReLU(),
             nn.Linear(512, self.img_size),
-            nn.Tanh()
+            nn.Sigmoid()
         )
     
     def forward(self, frames):
