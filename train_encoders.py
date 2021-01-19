@@ -91,7 +91,8 @@ def main():
             x_t = x_t.cuda()
 
             encoding, decoding = network(x_t)
-            loss = mse_loss(decoding, x_t)
+            step_mse = mse_loss(decoding, x_t)
+            loss = mse_loss(decoding, x_t) + 0.1 * ssim_loss(decoding, x_t)
             train_losses.append(loss.item())
 
             optimizer.zero_grad()
@@ -103,7 +104,9 @@ def main():
             
             with torch.no_grad():
                 encoding, decoding = network(x_t)
-                loss = mse_loss(decoding, x_t)
+                step_mse = mse_loss(decoding, x_t)
+                step_ssim = 0.1 * ssim_loss(decoding, x_t)
+                loss = step_mse + step_ssim
 
             if i < args.viz_samples: # display only the first 10 samples
                 input_image = np.array(ToPILImage()(x_t.cpu()[0]))
@@ -111,12 +114,12 @@ def main():
                 merged_image = np.concatenate((input_image, decoded_image))
                 imsave(epc_save_path / f'result_{i}.png', merged_image)
 
-            valid_losses.append(loss.item())
+            valid_losses.append(step_mse.item())
 
         avg_trn_loss = round(np.mean(train_losses), 4)
         avg_val_loss = round(np.mean(valid_losses), 4)
 
-        print(f'Epoch - {epoch} | Avg Train Loss - {avg_trn_loss} | Avg Val Loss - {avg_val_loss}')
+        print(f'Epoch - {epoch} | Avg Train MSE - {avg_trn_loss} | Avg Val MSE - {avg_val_loss}')
 
         # ===================Checkpointing=====================
         if best_val_loss > avg_val_loss:
