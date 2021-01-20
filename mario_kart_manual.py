@@ -10,7 +10,7 @@ class ManualController():
         self.rec_path = rec_path
         self.rec_folder = Path(rec_path) / str(int(time.time()))
         self.env = Monitor(env, self.rec_folder, force=True, 
-                    video_callable=lambda episode_id: True)
+                    video_callable=lambda episode_id: True, )
         self._delay_ms = 15 # magic number for displaying the game real-time
         self.record = True
         self.episode_summary = None
@@ -18,16 +18,15 @@ class ManualController():
         self.key_mapping = self._get_key_mapping(env.buttons)
 
     def _get_key_mapping(self, buttons):
-        # TODO: add quit button
         key_mapping = {
-            'w': buttons.index('UP'),
-            's': buttons.index('DOWN'),
-            'a': buttons.index('LEFT'),
-            'd': buttons.index('RIGHT'),
-            'n': buttons.index('A'),
-            'm': buttons.index('B'),
-            'j': buttons.index('X'),
-            'k': buttons.index('Y')
+            'Key.up': buttons.index('UP'),
+            'Key.down': buttons.index('DOWN'),
+            'Key.left': buttons.index('LEFT'),
+            'Key.right': buttons.index('RIGHT'),
+            'z': buttons.index('A'),
+            'x': buttons.index('B'),
+            'a': buttons.index('X'),
+            's': buttons.index('Y')
         }
         return key_mapping
 
@@ -59,14 +58,20 @@ class ManualController():
             self.record = False
             return False
         try:
-            self._set_key(key.char)
+            if isinstance(key, keyboard.Key):
+                self._set_key(str(key))
+            else:
+                self._set_key(key.char)
         except AttributeError:
             # Special char go brrr
             pass
 
     def on_release(self, key):
         try:
-            self._unset_key(key.char)
+            if isinstance(key, keyboard.Key):
+                self._unset_key(str(key))
+            else:
+                self._unset_key(key.char)
         except AttributeError:
             # Special char go brrr
             pass
@@ -79,6 +84,10 @@ class ManualController():
         listener.start()
 
     def play(self):
+        print('#'*69)
+        print('WARN: In order to control the game select the console window.')
+        print('Steering: arrow keys   Accelerate: x key   Decelerate: z key')
+        print('#'*69)
         self.start_key_listener()
         for episode_nb in range(5):
             if not self.record:
