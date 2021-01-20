@@ -1,4 +1,6 @@
-gym-retro
 opencv-python
+scikit-image
+gym-retro
 pynput
 pandas
+piq

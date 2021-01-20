@@ -3,6 +3,7 @@
 `python -m virtualenv .env` <- *creates default environment* \
 `.env\Scripts\activate` <- *activate environment* \
 `pip install -r requirements.txt` <-- *install requirements*
+`pip install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html` <-- *install pytorch*
 
 ## List supported roms
 `from gym import envs; print(envs.registry.all())` <- *Python code for gym* \

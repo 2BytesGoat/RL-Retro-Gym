@@ -44,6 +44,12 @@ def main():
     config = load_json('./configs', args.config_name)
     config = config[args.encoder_type] # take config info for PCA
 
+    if torch.cuda.is_available():
+        DEVICE = 'cuda'
+    else:
+        DEVICE = 'cpu'
+        print('CUDA is not available, using CPU instead...')
+
     # ===================Create data loaders=====================
     transforms = get_transforms(roi=config['roi'], grayscale=config['grayscale'])
 
