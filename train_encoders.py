@@ -17,7 +17,7 @@ from src.modeling import autoencoders
 
 """
 ToDos:
-    1. Add context loss + MSE
+    1. Resize images
     2. Add noise loss
     3. Refactor code
     4. Use pretrained VGG layers
@@ -42,8 +42,8 @@ def parse_args():
 def main():
     args = parse_args()
     config = load_json('./configs', args.config_name)
-    config = config[args.encoder_type] # take config info for PCA
-
+    config = config[args.encoder_type] 
+    
     if torch.cuda.is_available():
         DEVICE = 'cuda'
     else:
