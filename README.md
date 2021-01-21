@@ -36,6 +36,11 @@ I've also provided my own files which should work if you allready have a *rom.sf
 [Game Integration UI - Retro.io](https://retro.readthedocs.io/en/latest/integration.html#the-integration-ui) <- *where to download the integration ui*\
 [Integration UI issues - Retro.io](https://github.com/openai/retro/issues/159) <- *problems using the integration ui*
 
+# TODOs
+* Add support for CPU training
+* Create models folder and add mlp encoders
+* Remove OpenCV dependencies
+
 # References
 
 [Lucas Thompson - Youtube](https://www.youtube.com/channel/UCLA_tAh0hX9bjl6DfCe9OLw) <- retro-gym integration and general good starting point
