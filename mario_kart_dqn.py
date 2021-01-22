@@ -113,8 +113,7 @@ def main():
             print(f"\nEpisode: {i_episode} | Steps: {i} | Average return: {mean_ep_reward} | Max return: {max(ep_reward)} | Last return: {ep_reward[-1]}")
 
         # Update the target network, copying all weights and biases in DQN
-        if mean_ep_reward > prev_best_reward:
-            print('Saving agent cuz its better')
+        if i_episode % 10 == 0:
             prev_best_reward = mean_ep_reward
             agent.target_net.load_state_dict(agent.policy_net.state_dict())
             torch.save(agent.target_net.state_dict(), save_path / 'best_agent.pt')
