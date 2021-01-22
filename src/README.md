@@ -2,7 +2,7 @@
 1. **High speed** - encoding time should take under 0.04s
 2. **High fidelity** - better performance than PCA **(MSE on pixels)**
 3. **Small encoding length** - this will be used as a tie-breaker between 1. and 2.
-4. **Low resource** - preferably running on RaspberryPi 3
+4. **Low resource** - preferably running on RaspberryPi 
 
 # How to quantify - our metrics
 [Loss Functions for Image Restoration - Arxiv](https://arxiv.org/pdf/1511.08861.pdf) <- structural integrity metrics \
@@ -11,6 +11,14 @@
 # Where to start
 1. Create game recordings using mario_kart_manual.py
 2. Format data for encoder using *./src/preparation/make_encoder_dataset.py*
+
+# Results
+|Type           |Epoch|Train MSE|Val MSE|
+|---------------|-----|---------|-------|
+|PCA            |9    |0.0181   |0.0181 |
+|mlp_2lyr       |99   |0.0053   |0.0047 |
+|mlp_3lyr       |91   |0.0058   |0.0057 |
+|mlp_2lyr + ssim|99   |0.0053   |0.0047 |
 
 # References
 
