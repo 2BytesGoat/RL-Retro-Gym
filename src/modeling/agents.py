@@ -19,18 +19,17 @@ Transition = namedtuple('Transition',
 # TODO: make this a dictionary
 BATCH_SIZE = 128
 GAMMA = 0.999
-EPS_START = 0.1 # change to 0.9
+EPS_START = 0.9
 EPS_END = 0.05
-EPS_DECAY = 200
-TARGET_UPDATE = 10
+EPS_DECAY = 2000
 
 class DQN:
-    def __init__(self, state_shape, action_shape, enc_type='mlp', enc_dim=100, enc_load=None, memory_len=10000, ckpt_dst=''):
+    def __init__(self, state_shape, action_shape, enc_type='mlp', enc_dim=100, load_pretrained=None, memory_len=10000, ckpt_dst=''):
         self.state_shape = state_shape
         self.action_shape = action_shape
         self.enc_type = enc_type
         self.enc_dim = enc_dim
-        self.enc_load = Path(enc_load)
+        self.load_pretrained = Path(load_pretrained)
         self.ckpt_dst = Path(ckpt_dst)
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -41,13 +40,15 @@ class DQN:
         elif self.enc_type == 'mlp':
             self.encoder = autoencoders.MLP(self.state_shape, self.enc_dim)
 
-        if enc_load and enc_load.exists():
-            self.encoder.load_state_dict(torch.load(enc_load / "best_encoder.pt"))
-
         # ===================Initialize DQN backbone=====================
         self.target_net = backbone.MLP(self.enc_dim, self.action_shape).to(self.device)
         self.policy_net = backbone.MLP(self.enc_dim, self.action_shape).to(self.device)
         self.bb_optimizer = torch.optim.RMSprop(self.policy_net.parameters())
+
+        if self.load_pretrained and self.load_pretrained.exists():
+            self.encoder.load_state_dict(torch.load(self.load_pretrained / "best_encoder.pt"))
+            self.target_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
+            self.policy_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
 
         # ===================Initialize replay buffer=====================
         self.memory = ReplayBuffer(memory_len)
