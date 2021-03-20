@@ -1,14 +1,24 @@
 import time
 import retro
+import argparse
 import pandas as pd
+
 from pathlib import Path
 from pynput import keyboard
 from gym.wrappers import Monitor
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rec_path", default="./gameplay_rec", type=Path)
+    parser.add_argument("--state_idx", default=0, type=int)
+    
+    args = parser.parse_args()
+    return args
+
 class ManualController():
-    def __init__(self, env, rec_path='./video'):
+    def __init__(self, env, rec_path):
         self.rec_path = rec_path
-        self.rec_folder = Path(rec_path) / str(int(time.time()))
+        self.rec_folder = rec_path / str(int(time.time()))
         self.env = Monitor(env, self.rec_folder, force=True, 
                     video_callable=lambda episode_id: True, )
         self._delay_ms = 15 # magic number for displaying the game real-time
@@ -106,6 +116,14 @@ class ManualController():
         self.env.close()
 
 if __name__ == '__main__':
-    env = retro.make(game='SuperMarioKart-Snes')
-    mc_hammer = ManualController(env, rec_path='./video')
+    states = {
+        0: '1P_DK_Shroom_R1',
+        1: '1P_Mario_Flower_R1',
+        2: '1P_Peach_Star_R1'
+    }
+
+    args = parse_args()
+    env = retro.make(game='SuperMarioKart-Snes', state=states[args.state_idx])
+
+    mc_hammer = ManualController(env, args.rec_path)
     mc_hammer.play()

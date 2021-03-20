@@ -8,6 +8,6 @@ __pycache__
 *.sha
 
 # dataset files
-video/*
+gameplay_rec/*
 data/*
 *.zip
