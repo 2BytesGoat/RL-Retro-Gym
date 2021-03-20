@@ -17,19 +17,20 @@ Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
 # TODO: make this a dictionary
-BATCH_SIZE = 128
 GAMMA = 0.999
 EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 2000
 
 class DQN:
-    def __init__(self, state_shape, action_shape, enc_type='mlp', enc_dim=100, load_pretrained=None, memory_len=10000, ckpt_dst=''):
+    def __init__(self, state_shape, action_shape, enc_type='mlp', enc_dim=100, memory_len=10000, batch_size=128, load_pretrained=None, ckpt_dst=''):
         self.state_shape = state_shape
         self.action_shape = action_shape
         self.enc_type = enc_type
         self.enc_dim = enc_dim
-        self.load_pretrained = Path(load_pretrained)
+        self.memory_len = memory_len
+        self.batch_size = batch_size
+        self.load_pretrained = load_pretrained
         self.ckpt_dst = Path(ckpt_dst)
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -61,15 +62,16 @@ class DQN:
         self.current_step += 1
         if sample > eps_threshold:
             with torch.no_grad():
+                # investigate enc_state[0] <- this may cause issues for larger batches
                 enc_state = self.encoder(state)[0].to(self.device)
                 return self.policy_net(enc_state).max(1)[1].view(1, 1)
         else:
             return torch.tensor([[random.randrange(self.action_shape)]], device=self.device, dtype=torch.long)
 
     def optimize_agent(self):
-        if len(self.memory) < BATCH_SIZE:
+        if len(self.memory) < self.batch_size:
             return
-        transitions = self.memory.sample(BATCH_SIZE)
+        transitions = self.memory.sample(self.batch_size)
         # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
         # detailed explanation). This converts batch-array of Transitions
         # to Transition of batch-arrays.
@@ -98,7 +100,7 @@ class DQN:
         # state value or 0 in case the state was final.
         with torch.no_grad():
             enc_n_state_batch = self.encoder(non_final_next_states)[0].to(self.device)
-        next_state_values = torch.zeros(BATCH_SIZE, device=self.device)
+        next_state_values = torch.zeros(self.batch_size, device=self.device)
         next_state_values[non_final_mask] = self.target_net(enc_n_state_batch).max(1)[0].detach()
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch

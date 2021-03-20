@@ -13,10 +13,8 @@ from src.modeling.agents import DQN
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--save_path", default=None, type=Path)
-    parser.add_argument("--load_path", required=True, type=Path)
-
-    parser.add_argument("--encoder_type", required=True, type=str)
+    parser.add_argument("--save_path", default="./checkpoints", type=Path)
+    parser.add_argument("--load_path", type=Path)
     parser.add_argument("--config_name", required=True)
     
     args = parser.parse_args()
@@ -25,7 +23,6 @@ def parse_args():
 def main():
     args = parse_args()
     config = load_json('./configs', args.config_name)
-    config = config[args.encoder_type]
 
     simplified_actions = {
         0: 6, # left
@@ -42,27 +39,32 @@ def main():
     init_state = env.reset()
 
     # ===================Initialize agent=====================
-    transforms = get_transforms(roi=config['roi'], grayscale=config['grayscale'])
+    transforms = get_transforms(roi=config['preprocessing']['roi'], 
+                                grayscale=config['preprocessing']['grayscale'])
     
     init_state = apply_transforms(init_state, transforms)
     
     state_shape = init_state.shape[1:]
-    # action_shape = env.action_space.shape[0]
     action_shape = len(simplified_actions)
 
-    agent = DQN(state_shape, action_shape, load_pretrained=args.load_path)
+    # TODO: encoder should be created outside DQN
+    agent = DQN(state_shape, action_shape, 
+                enc_type=config['encoder']['type'],
+                enc_dim=config['encoder']['latent_dim'], 
+                batch_size=config['training']['batch_size'],
+                load_pretrained=args.load_path)
 
     state = env.reset()
     state = apply_transforms(state, transforms)
 
     # ===================Train agent=====================
-    num_episodes = 500
-    num_ep_steps = 1000
+    n_episodes = config['training']['n_episodes']
+    n_steps = config['training']['n_steps']
     prev_best_reward = 0
-    for i_episode in range(num_episodes):
+    for i_episode in range(n_episodes):
         # ===================Visualize agent=====================
         if i_episode % 10 == 0:
-            for _ in range(num_ep_steps):
+            for _ in range(n_steps):
                 # Select and perform an action
                 action = agent.take_action(state)
                 # Format action for environment
@@ -77,8 +79,8 @@ def main():
         state = env.reset()
         state = apply_transforms(state, transforms)
         prev_cart_pos = 0
-        with tqdm.tqdm(total=num_ep_steps, position=0, leave=True) as pbar:
-            for i in range(num_ep_steps):
+        with tqdm.tqdm(total=n_steps, position=0, leave=True) as pbar:
+            for i in range(n_steps):
                 # Select and perform an action
                 action = agent.take_action(state)
 

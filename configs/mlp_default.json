@@ -1,0 +1,17 @@
+{
+    "encoder": {
+        "type": "mlp",
+        "latent_dim": 100
+    },
+
+    "preprocessing": {
+        "roi": [0, 107, 0, 256],
+        "grayscale": true
+    },
+
+    "training":{
+        "batch_size": 128,
+        "n_episodes": 25,
+        "n_steps": 1000
+    }
+}
