@@ -5,3 +5,4 @@ pynput
 pandas
 piq
 tqdm
+jupyter

@@ -7,6 +7,12 @@ from pathlib import Path
 from pynput import keyboard
 from gym.wrappers import Monitor
 
+states = {
+        0: '1P_DK_Shroom_R1',
+        1: '1P_Mario_Flower_R1',
+        2: '1P_Peach_Star_R1'
+    }
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--rec_path", default="./gameplay_rec", type=Path)
@@ -60,7 +66,8 @@ class ManualController():
             self.episode_summary = pd.concat([self.episode_summary, info_df])
 
     def _save_summary(self, episode_nb=0):
-        self.episode_summary.to_csv(f'{self.rec_folder}/openaigym.episode_summary.{episode_nb}.csv')
+        csv_save_path = f'{self.rec_folder}/openaigym.episode_summary.{episode_nb}.csv'
+        self.episode_summary.to_csv(csv_save_path, index=False)
 
     def on_press(self, key):
         if key == keyboard.Key.esc:
@@ -116,12 +123,6 @@ class ManualController():
         self.env.close()
 
 if __name__ == '__main__':
-    states = {
-        0: '1P_DK_Shroom_R1',
-        1: '1P_Mario_Flower_R1',
-        2: '1P_Peach_Star_R1'
-    }
-
     args = parse_args()
     env = retro.make(game='SuperMarioKart-Snes', state=states[args.state_idx])
 

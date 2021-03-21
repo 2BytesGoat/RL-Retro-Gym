@@ -24,11 +24,16 @@ def main():
     args = parse_args()
     config = load_json('./configs', args.config_name)
 
+    # actions selected base on investigation done in notebooks
     simplified_actions = {
-        0: 6, # left
-        1: 7, # right
-        2: 8, # decelerate
-        3: 0  # accelerate
+        0: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # x
+        1: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # x+Key.left
+        2: [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], # x+Key.up
+        3: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # x+Key.right
+        4: [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0], # x+Key.up+Key.left
+        5: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # Key.left
+        6: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # Key.right
+        7: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # do nothing
     }
 
     save_path = Path(args.save_path)
@@ -68,9 +73,8 @@ def main():
                 # Select and perform an action
                 action = agent.take_action(state)
                 # Format action for environment
-                btn_pressed = simplified_actions[action.item()]
-                env_action = [0] * len(env.buttons)
-                env_action[btn_pressed] = 1
+                env_action = simplified_actions[action.item()]
+                # Apply action on environment
                 n_state, reward, done, info = env.step(env_action)
                 env.render()
 
@@ -85,9 +89,7 @@ def main():
                 action = agent.take_action(state)
 
                 # Format action for environment
-                btn_pressed = simplified_actions[action.item()]
-                env_action = [0] * len(env.buttons)
-                env_action[btn_pressed] = 1
+                env_action = simplified_actions[action.item()]
 
                 # Take action in environment
                 n_state, _, done, info = env.step(env_action)
