@@ -31,7 +31,6 @@ def parse_args():
     parser.add_argument("--load_path", default=None, type=Path)
 
     parser.add_argument("--config_name", required=True)
-    parser.add_argument("--encoder_type", required=True, type=str)
     
     parser.add_argument("--viz_samples", default=5, type=int)
     parser.add_argument("--patience", default=10, type=int)
@@ -42,7 +41,6 @@ def parse_args():
 def main():
     args = parse_args()
     config = load_json('./configs', args.config_name)
-    config = config[args.encoder_type] 
     
     if torch.cuda.is_available():
         DEVICE = 'cuda'
@@ -51,7 +49,8 @@ def main():
         print('CUDA is not available, using CPU instead...')
 
     # ===================Create data loaders=====================
-    transforms = get_transforms(roi=config['roi'], grayscale=config['grayscale'])
+    transforms = get_transforms(roi=config['preprocessing']['roi'], 
+                                grayscale=config['preprocessing']['grayscale'])
 
     train_set = SuperMarioKartDataset(
         Path(args.data_path) / 'train_files.txt', transforms=transforms
@@ -60,22 +59,22 @@ def main():
         Path(args.data_path) / 'valid_files.txt', transforms=transforms
     )
 
-    train_loader = DataLoader(train_set, batch_size=config['batch_size'], num_workers=4)
+    train_loader = DataLoader(train_set, batch_size=config['training']['batch_size'], num_workers=4)
     valid_loader = DataLoader(train_set, batch_size=1, num_workers=4)
 
     # ===================Export some val images=====================
     if not args.save_path:
-        save_path = args.data_path / (args.encoder_type + '_results')
+        save_path = args.data_path / (config['encoder']['type'] + '_results')
     else:
         save_path = args.save_path
     save_path.mkdir(exist_ok=True)
 
     # ===================Instantiate models=====================
     img_shape = train_set.image_shape
-    if args.encoder_type == 'pca':
-        network = autoencoders.PCA(img_shape, config['latent_dim']).cuda()
-    elif args.encoder_type == 'mlp':
-        network = autoencoders.MLP(img_shape, config['latent_dim']).cuda()
+    if config['encoder']['type'] == 'pca':
+        network = autoencoders.PCA(img_shape, config['encoder']['latent_dim']).cuda()
+    elif config['encoder']['type'] == 'mlp':
+        network = autoencoders.MLP(img_shape, config['encoder']['latent_dim']).cuda()
 
     optimizer = torch.optim.Adam(network.parameters())
     ssim_loss = SSIMLoss(data_range=1.)
@@ -88,7 +87,7 @@ def main():
     best_val_loss = 999
     cnt_bad_epocs = 0
 
-    for epoch in range(1, config['n_epochs'] + 1):
+    for epoch in range(1, config['training']['n_episodes'] + 1):
         train_losses, valid_losses = [], []
         epc_save_path = save_path / f'epoch_{epoch}'
         epc_save_path.mkdir(exist_ok=True)
@@ -98,7 +97,7 @@ def main():
 
             encoding, decoding = network(x_t)
             step_mse = mse_loss(decoding, x_t)
-            loss = mse_loss(decoding, x_t) + 0.1 * ssim_loss(decoding, x_t)
+            loss = mse_loss(decoding, x_t)
             train_losses.append(loss.item())
 
             optimizer.zero_grad()

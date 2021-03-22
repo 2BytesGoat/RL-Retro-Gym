@@ -1,6 +1,7 @@
 opencv-python
 scikit-image
 gym-retro
+gym==0.17.3
 pynput
 pandas
 piq

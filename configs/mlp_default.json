@@ -5,13 +5,13 @@
     },
 
     "preprocessing": {
-        "roi": [0, 107, 0, 256],
+        "roi": [20, 70, 10, 190],
         "grayscale": true
     },
 
     "training":{
         "batch_size": 128,
-        "n_episodes": 25,
+        "n_episodes": 250,
         "n_steps": 1000
     }
 }

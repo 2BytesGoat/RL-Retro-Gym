@@ -5,7 +5,7 @@
     },
 
     "preprocessing": {
-        "roi": [0, 107, 0, 256],
+        "roi": [20, 70, 10, 190],
         "grayscale": true
     },
 

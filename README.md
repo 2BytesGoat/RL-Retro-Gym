@@ -1,4 +1,12 @@
 # Useful info
+
+## How to use
+**Step0** - `run mario_kart_random.py` - to check whether you setup everything correct
+
+**Step1** - `run mario_kart_manual.py` - to record some data for either behavioral cloning or encoder training 
+
+**Step3** - `run src/preparation/make_encoder_dataset.py` to split your recordings into frames 
+
 ## Create local environment
 `python -m virtualenv .env` <- *creates default environment* \
 `.env\Scripts\activate` <- *activate environment* \
