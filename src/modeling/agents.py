@@ -19,7 +19,7 @@ Transition = namedtuple('Transition',
 # TODO: make this a dictionary
 GAMMA = 0.999
 EPS_START = 0.9
-EPS_END = 0.05
+EPS_END = 0.2
 EPS_DECAY = 2000
 
 class DQN:
@@ -48,19 +48,20 @@ class DQN:
 
         if self.load_pretrained and self.load_pretrained.exists():
             self.encoder.load_state_dict(torch.load(self.load_pretrained / "best_encoder.pt"))
-            self.target_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
-            self.policy_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
+            if (self.load_pretrained / "best_agent.pt").is_file():
+                self.target_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
+                self.policy_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
 
         # ===================Initialize replay buffer=====================
         self.memory = ReplayBuffer(memory_len)
         self.current_step = 0
 
-    def take_action(self, state):
+    def take_action(self, state, greedy=False):
         sample = random.random()
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
                 math.exp(-1. * self.current_step / EPS_DECAY)
         self.current_step += 1
-        if sample > eps_threshold:
+        if sample > eps_threshold and not greedy:
             with torch.no_grad():
                 # investigate enc_state[0] <- this may cause issues for larger batches
                 enc_state = self.encoder(state)[0].to(self.device)

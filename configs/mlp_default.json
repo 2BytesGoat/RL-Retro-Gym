@@ -12,6 +12,6 @@
     "training":{
         "batch_size": 128,
         "n_episodes": 250,
-        "n_steps": 1000
+        "n_steps": 2000
     }
 }

@@ -113,7 +113,7 @@ def main():
                 step_ssim = 0.1 * ssim_loss(decoding, x_t)
                 loss = step_mse + step_ssim
 
-            if i < args.viz_samples: # display only the first 10 samples
+            if not epoch % 5 and i < args.viz_samples: # saving samples
                 input_image = np.array(ToPILImage()(x_t.cpu()[0]))
                 decoded_image = np.array(ToPILImage()(decoding.cpu()[0]))
                 merged_image = np.concatenate((input_image, decoded_image))

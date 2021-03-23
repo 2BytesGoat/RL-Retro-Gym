@@ -13,9 +13,9 @@ from src.modeling.agents import DQN
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--save_path", default="./checkpoints", type=Path)
-    parser.add_argument("--load_path", type=Path)
-    parser.add_argument("--config_name", required=True)
+    parser.add_argument("--save_path", '-s', default="./checkpoints", type=Path)
+    parser.add_argument("--load_path", '-l', type=Path, help="Path where pretrained encoder and agent weights are stored")
+    parser.add_argument("--config_name", '-c', required=True)
     
     args = parser.parse_args()
     return args
@@ -71,7 +71,7 @@ def main():
         if i_episode % 10 == 0:
             for _ in range(n_steps):
                 # Select and perform an action
-                action = agent.take_action(state)
+                action = agent.take_action(state, greedy=True)
                 # Format action for environment
                 env_action = simplified_actions[action.item()]
                 # Apply action on environment
