@@ -5,6 +5,7 @@ import torch
 import tqdm
 import time
 import numpy as np
+from gym.wrappers import Monitor
 
 from pathlib import Path
 
@@ -23,7 +24,6 @@ def parse_args():
 def main():
     args = parse_args()
     config = load_json('./configs', args.config_name)
-
     # actions selected base on investigation done in notebooks
     simplified_actions = {
         0: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # x
@@ -41,6 +41,8 @@ def main():
 
     # ===================Intialize environment=====================
     env = retro.make(game='SuperMarioKart-Snes')
+    monitor = Monitor(env, args.save_path, force=True, 
+                video_callable=lambda episode_id: True, )
     init_state = env.reset()
 
     # ===================Initialize agent=====================
@@ -59,9 +61,6 @@ def main():
                 batch_size=config['training']['batch_size'],
                 load_pretrained=args.load_path)
 
-    state = env.reset()
-    state = apply_transforms(state, transforms)
-
     # ===================Train agent=====================
     n_episodes = config['training']['n_episodes']
     n_steps = config['training']['n_steps']
@@ -69,15 +68,15 @@ def main():
     for i_episode in range(n_episodes):
         # ===================Visualize agent=====================
         if i_episode % 10 == 0:
+            m_state = monitor.reset()
             for _ in range(n_steps):
                 # Select and perform an action
-                action = agent.take_action(state, greedy=True)
+                action = agent.take_action(m_state, greedy=True)
                 # Format action for environment
                 env_action = simplified_actions[action.item()]
                 # Apply action on environment
-                n_state, reward, done, info = env.step(env_action)
+                m_state, reward, m_done, info = env.step(env_action)
                 env.render()
-
         # Initialize the environment and state
         ep_reward = []
         state = env.reset()
@@ -114,11 +113,9 @@ def main():
                     break
 
                 last_return = round(ep_reward[-1], 2)
-                pbar.set_description_str(f"Steps: {i} | Max return: {max(ep_reward)} | Last return: {last_return}")
+                mean_ep_reward = round(np.mean(ep_reward), 4)
+                pbar.set_description_str(f"Episode: {i_episode} | Steps: {i+1} | Last reward: {last_return} | Average reward: {mean_ep_reward}")
                 
-            mean_ep_reward = round(np.mean(ep_reward), 4)
-            print(f"\nEpisode: {i_episode} | Steps taken: {i} | Average return: {mean_ep_reward} | Max return: {max(ep_reward)} | Last return: {ep_reward[-1]}")
-
         # Update the target network, copying all weights and biases in DQN
         if i_episode % 10 == 0:
             prev_best_reward = mean_ep_reward
