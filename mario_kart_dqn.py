@@ -112,9 +112,12 @@ def main():
 
                 if done:
                     break
+
+                last_return = round(ep_reward[-1], 2)
+                pbar.set_description_str(f"Steps: {i} | Max return: {max(ep_reward)} | Last return: {last_return}")
                 
             mean_ep_reward = round(np.mean(ep_reward), 4)
-            print(f"\nEpisode: {i_episode} | Steps: {i} | Average return: {mean_ep_reward} | Max return: {max(ep_reward)} | Last return: {ep_reward[-1]}")
+            print(f"\nEpisode: {i_episode} | Steps taken: {i} | Average return: {mean_ep_reward} | Max return: {max(ep_reward)} | Last return: {ep_reward[-1]}")
 
         # Update the target network, copying all weights and biases in DQN
         if i_episode % 10 == 0:
@@ -131,8 +134,8 @@ def calculate_reward(info, prev_pos):
         advance_reward = 0
 
     cart_place = 9.0 - (info['cart_place'] / 2 + 1)
-    cart_speed = info['cart_speed'] - 10.0
-    return advance_reward * cart_place + cart_speed * 1e-3
+    cart_speed = info['cart_speed'] - 100.0
+    return advance_reward * cart_place + cart_speed * 1e-2
 
 def apply_transforms(state, transforms):
     _state = state.copy()
