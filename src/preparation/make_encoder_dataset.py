@@ -5,11 +5,11 @@ from pathlib import Path
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", required=True, type=Path)
-    parser.add_argument("--txt_path", required=True, type=Path)
-    parser.add_argument("--max_frames", default=2000)
-    parser.add_argument("--frame_stride", default=1, type=int)
-    parser.add_argument("--paths_split", default=0.75)
+    parser.add_argument("--data_path", required=True, type=Path, help="video sequence folder/path")
+    parser.add_argument("--txt_path", required=True, type=Path, help="where to save txt which point to extracted frames")
+    parser.add_argument("--max_frames", default=2000, help="max number of extracted frames")
+    parser.add_argument("--frame_stride", default=1, type=int, help="take every n-th frame from sequence")
+    parser.add_argument("--split_ratio", default=0.75, help="split ratio for train and test")
     args = parser.parse_args()
     return args
 
@@ -32,7 +32,7 @@ def main():
 def extract_from_file(file_path, dump_path, max_frames, args, append_txt):
     file_paths = dump_frames(file_path, dump_path, max_frames, args.frame_stride)
 
-    train_paths = random.choices(file_paths, k=int(len(file_paths) * args.paths_split))
+    train_paths = random.choices(file_paths, k=int(len(file_paths) * args.split_ratio))
     valid_paths = list(set(file_paths) - set(train_paths))
     export_paths(train_paths, args.txt_path / 'train_files.txt', append_txt)
     export_paths(valid_paths, args.txt_path / 'valid_files.txt', append_txt)
