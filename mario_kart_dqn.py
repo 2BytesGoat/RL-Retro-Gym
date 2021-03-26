@@ -5,12 +5,13 @@ import torch
 import tqdm
 import time
 import numpy as np
-from gym.wrappers import Monitor
+import cv2
 
 from pathlib import Path
 
 from src.processing import get_transforms
 from src.modeling.agents import DQN
+from custom_monitor import CustomMonitor
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -40,10 +41,12 @@ def main():
     save_path.mkdir(exist_ok=True)
 
     # ===================Intialize environment=====================
-    env = retro.make(game='SuperMarioKart-Snes')
-    monitor = Monitor(env, args.save_path, force=True, 
-                video_callable=lambda episode_id: True, )
+    env = retro.make(game='SuperMarioKart-Snes', state='1P_DK_Shroom_R1_fast')
     init_state = env.reset()
+
+    # ===================Create monitor=====================
+    h, w, c = init_state.shape
+    monitor = CustomMonitor(args.save_path, (w, h))
 
     # ===================Initialize agent=====================
     transforms = get_transforms(roi=config['preprocessing']['roi'], 
@@ -68,7 +71,9 @@ def main():
     for i_episode in range(n_episodes):
         # ===================Visualize agent=====================
         if i_episode % 10 == 0:
-            m_state = monitor.reset()
+            m_state = env.reset()
+            monitor.start_new(name=f'episode_{i_episode}')
+            monitor.write(m_state)
             for _ in range(n_steps):
                 # Select and perform an action
                 action = agent.take_action(m_state, greedy=True)
@@ -76,7 +81,10 @@ def main():
                 env_action = simplified_actions[action.item()]
                 # Apply action on environment
                 m_state, reward, m_done, info = env.step(env_action)
+                # Record next state
+                monitor.write(m_state)
                 env.render()
+            monitor.release()
         # Initialize the environment and state
         ep_reward = []
         state = env.reset()
