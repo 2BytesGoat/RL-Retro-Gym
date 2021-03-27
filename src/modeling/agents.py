@@ -23,7 +23,7 @@ EPS_END = 0.2
 EPS_DECAY = 2000
 
 class DQN:
-    def __init__(self, state_shape, action_shape, enc_type='mlp', enc_dim=100, memory_len=10000, batch_size=128, load_pretrained=None, ckpt_dst=''):
+    def __init__(self, state_shape, action_shape, enc_type, enc_dim=100, memory_len=10000, batch_size=128, load_pretrained=None, ckpt_dst=''):
         self.state_shape = state_shape
         self.action_shape = action_shape
         self.enc_type = enc_type
@@ -63,9 +63,8 @@ class DQN:
         self.current_step += 1
         if sample > eps_threshold and not greedy:
             with torch.no_grad():
-                # encoder(state) returns tuple of tensors
-                encoding, decoding = self.encoder(state)
-                enc_state = encoding.to(self.device)
+                # encode states
+                enc_state = self.encoder.encode(state).to(self.device)
                 # take the action with the maximum return
                 return self.policy_net(enc_state).max(1)[1].view(1, 1)
         else:
@@ -93,7 +92,7 @@ class DQN:
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
         with torch.no_grad():
-            enc_state_batch = self.encoder(state_batch)[0].to(self.device)
+            enc_state_batch = self.encoder.encode(state_batch).to(self.device)
         state_action_values = self.policy_net(enc_state_batch).gather(1, action_batch)
 
         # Compute V(s_{t+1}) for all next states.

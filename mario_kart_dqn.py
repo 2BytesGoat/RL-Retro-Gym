@@ -29,12 +29,10 @@ def main():
     simplified_actions = {
         0: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # x
         1: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # x+Key.left
-        2: [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], # x+Key.up
-        3: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # x+Key.right
-        4: [1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0], # x+Key.up+Key.left
-        5: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # Key.left
-        6: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # Key.right
-        7: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # do nothing
+        2: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # x+Key.right
+        # 3: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # Key.left
+        # 4: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # Key.right
+        # 5: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # do nothing
     }
 
     save_path = Path(args.save_path)
@@ -137,13 +135,13 @@ def main():
 
 def calculate_reward(info, prev_pos):
     if prev_pos < info['cart_position_x']:
-        advance_reward = 1
+        advance_reward = 10
     else:
         advance_reward = 0
 
     cart_place = 9.0 - (info['cart_place'] / 2 + 1)
-    cart_speed = info['cart_speed'] - 100.0
-    return advance_reward * cart_place + cart_speed * 1e-2
+    cart_speed = info['cart_speed'] / 80
+    return cart_place * advance_reward + cart_speed
 
 def apply_transforms(state, transforms):
     _state = state.copy()
