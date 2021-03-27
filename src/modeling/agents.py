@@ -63,8 +63,10 @@ class DQN:
         self.current_step += 1
         if sample > eps_threshold and not greedy:
             with torch.no_grad():
-                # investigate enc_state[0] <- this may cause issues for larger batches
-                enc_state = self.encoder(state)[0].to(self.device)
+                # encoder(state) returns tuple of tensors
+                encoding, decoding = self.encoder(state)
+                enc_state = encoding.to(self.device)
+                # take the action with the maximum return
                 return self.policy_net(enc_state).max(1)[1].view(1, 1)
         else:
             return torch.tensor([[random.randrange(self.action_shape)]], device=self.device, dtype=torch.long)

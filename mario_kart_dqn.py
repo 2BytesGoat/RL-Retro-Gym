@@ -70,26 +70,30 @@ def main():
     prev_best_reward = 0
     for i_episode in range(n_episodes):
         # ===================Visualize agent=====================
-        if i_episode % 10 == 0:
-            m_state = env.reset()
+        if i_episode % 5 == 0:
+            frame = env.reset()
+            state = apply_transforms(frame, transforms)
+
             monitor.start_new(name=f'episode_{i_episode}')
-            monitor.write(m_state)
+            monitor.write(frame, state=state)
             for _ in range(n_steps):
                 # Select and perform an action
-                action = agent.take_action(m_state, greedy=True)
+                action = agent.take_action(state, greedy=True)
                 # Format action for environment
                 env_action = simplified_actions[action.item()]
                 # Apply action on environment
-                m_state, reward, m_done, info = env.step(env_action)
+                frame, reward, done, info = env.step(env_action)
+                state = apply_transforms(frame, transforms)
                 # Record next state
-                monitor.write(m_state)
+                monitor.write(frame, state=state)
                 env.render()
             monitor.release()
+
         # Initialize the environment and state
         ep_reward = []
-        state = env.reset()
-        state = apply_transforms(state, transforms)
         prev_cart_pos = 0
+        frame = env.reset()
+        state = apply_transforms(frame, transforms)
         with tqdm.tqdm(total=n_steps, position=0, leave=True) as pbar:
             for i in range(n_steps):
                 # Select and perform an action
@@ -99,16 +103,15 @@ def main():
                 env_action = simplified_actions[action.item()]
 
                 # Take action in environment
-                n_state, _, done, info = env.step(env_action)
+                n_frame, _, done, info = env.step(env_action)
                 reward = calculate_reward(info, prev_cart_pos)
                 prev_cart_pos = info['cart_position_x']
 
                 ep_reward.append(reward)
 
                 # Store the transition in memory
-                n_state = apply_transforms(n_state, transforms)
-                reward = torch.tensor([reward])
-                agent.memory.push(state, action, n_state, reward)
+                n_state = apply_transforms(n_frame, transforms)
+                agent.memory.push(state, action, n_state, torch.tensor([reward]))
 
                 # Move to the next state
                 state = n_state
@@ -120,7 +123,7 @@ def main():
                 if done:
                     break
 
-                last_return = round(ep_reward[-1], 2)
+                last_return = round(reward, 2)
                 mean_ep_reward = round(np.mean(ep_reward), 4)
                 pbar.set_description_str(f"Episode: {i_episode} | Steps: {i+1} | Last reward: {last_return} | Average reward: {mean_ep_reward}")
                 
