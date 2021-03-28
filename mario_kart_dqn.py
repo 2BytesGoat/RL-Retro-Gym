@@ -9,62 +9,64 @@ import cv2
 
 from pathlib import Path
 
-from src.processing import get_transforms
-from src.modeling.agents import DQN
+from utils import yaml_config_hook
 from custom_monitor import CustomMonitor
+from src.processing import get_transforms
+from src.modeling.autoencoders import get_encoder
+from src.modeling.agents import DQN
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--save_path", '-s', default="./checkpoints", type=Path)
     parser.add_argument("--load_path", '-l', type=Path, help="Path where pretrained encoder and agent weights are stored")
-    parser.add_argument("--config_name", '-c', required=True)
+    parser.add_argument("--enc_config_path", '-ec', required=True, type=Path)
+    parser.add_argument("--agent_config_path", '-ac', required=True, type=Path)
     
     args = parser.parse_args()
     return args
 
 def main():
     args = parse_args()
-    config = load_json('./configs', args.config_name)
-    # actions selected base on investigation done in notebooks
-    simplified_actions = {
-        0: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], # x
-        1: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # x+Key.left
-        2: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # x+Key.right
-        # 3: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], # Key.left
-        # 4: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0], # Key.right
-        # 5: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # do nothing
-    }
+    enc_config = yaml_config_hook(args.enc_config_path)
+    agent_config = yaml_config_hook(args.agent_config_path)
 
     save_path = Path(args.save_path)
     save_path.mkdir(exist_ok=True)
+
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # ===================Intialize environment=====================
     env = retro.make(game='SuperMarioKart-Snes', state='1P_DK_Shroom_R1_fast')
     init_state = env.reset()
 
-    # ===================Create monitor=====================
+    simplified_actions = agent_config['simplified_actions']
+
+    transforms = get_transforms(**enc_config['preprocessing'])
+    init_state = apply_transforms(init_state, transforms)
+    
+    input_shape = init_state.shape[1:]
+    action_shape = len(simplified_actions)
+
+    # ===================Initialize monitor=====================
     h, w, c = init_state.shape
     monitor = CustomMonitor(args.save_path, (w, h))
 
-    # ===================Initialize agent=====================
-    transforms = get_transforms(roi=config['preprocessing']['roi'], 
-                                grayscale=config['preprocessing']['grayscale'])
-    
-    init_state = apply_transforms(init_state, transforms)
-    
-    state_shape = init_state.shape[1:]
-    action_shape = len(simplified_actions)
+    # ===================Initialize encoder=====================
+    encoder = get_encoder(input_shape=input_shape, **enc_config['encoder']).to(DEVICE)
 
-    # TODO: encoder should be created outside DQN
-    agent = DQN(state_shape, action_shape, 
-                enc_type=config['encoder']['type'],
-                enc_dim=config['encoder']['latent_dim'], 
-                batch_size=config['training']['batch_size'],
-                load_pretrained=args.load_path)
+    if args.load_path and args.load_path.exists():
+        encoder.load_state_dict(torch.load(args.load_path / "best_encoder.pt"))
+
+    # ===================Initialize agent=====================
+    agent = DQN(action_shape, 
+                encoder=encoder,
+                batch_size=agent_config['training']['batch_size'],
+                load_path=args.load_path,
+                device=DEVICE)
 
     # ===================Train agent=====================
-    n_episodes = config['training']['n_episodes']
-    n_steps = config['training']['n_steps']
+    n_episodes = agent_config['training']['n_episodes']
+    n_steps = agent_config['training']['n_steps']
     prev_best_reward = 0
     for i_episode in range(n_episodes):
         # ===================Visualize agent=====================
@@ -92,39 +94,39 @@ def main():
         prev_cart_pos = 0
         frame = env.reset()
         state = apply_transforms(frame, transforms)
-        with tqdm.tqdm(total=n_steps, position=0, leave=True) as pbar:
-            for i in range(n_steps):
-                # Select and perform an action
-                action = agent.take_action(state)
+        pbar = tqdm.tqdm(total=n_steps, position=0)
+        for i in range(n_steps):
+            # Select and perform an action
+            action = agent.take_action(state)
 
-                # Format action for environment
-                env_action = simplified_actions[action.item()]
+            # Format action for environment
+            env_action = simplified_actions[action.item()]
 
-                # Take action in environment
-                n_frame, _, done, info = env.step(env_action)
-                reward = calculate_reward(info, prev_cart_pos)
-                prev_cart_pos = info['cart_position_x']
+            # Take action in environment
+            n_frame, _, done, info = env.step(env_action)
+            reward = calculate_reward(info, prev_cart_pos)
+            prev_cart_pos = info['cart_position_x']
 
-                ep_reward.append(reward)
+            ep_reward.append(reward)
 
-                # Store the transition in memory
-                n_state = apply_transforms(n_frame, transforms)
-                agent.memory.push(state, action, n_state, torch.tensor([reward]))
+            # Store the transition in memory
+            n_state = apply_transforms(n_frame, transforms)
+            agent.memory.push(state, action, n_state, torch.tensor([reward]))
 
-                # Move to the next state
-                state = n_state
+            # Move to the next state
+            state = n_state
 
-                # Perform one step of the optimization (on the target network)
-                agent.optimize_agent()
-                pbar.update(1)
+            # Perform one step of the optimization (on the target network)
+            agent.optimize_agent()
+            pbar.update(1)
 
-                if done:
-                    break
+            if done:
+                break
 
-                last_return = round(reward, 2)
-                mean_ep_reward = round(np.mean(ep_reward), 4)
-                pbar.set_description_str(f"Episode: {i_episode} | Steps: {i+1} | Last reward: {last_return} | Average reward: {mean_ep_reward}")
-                
+            last_return = round(reward, 2)
+            mean_ep_reward = round(np.mean(ep_reward), 4)
+            pbar.set_description_str(f"Episode: {i_episode} | Steps: {i+1} | Last reward: {last_return} | Average reward: {mean_ep_reward}")
+        pbar.close()
         # Update the target network, copying all weights and biases in DQN
         if i_episode % 10 == 0:
             prev_best_reward = mean_ep_reward
@@ -148,17 +150,6 @@ def apply_transforms(state, transforms):
     for t in transforms:
         _state = t(_state)
     return _state
-
-def load_json(fdir, name):
-    """
-    Load json as python object
-    """
-    path = Path(fdir) / "{}.json".format(name)
-    if not path.exists():
-        raise FileNotFoundError("Could not find json file: {}".format(path))
-    with open(path, "r") as f:
-        obj = json.load(f)
-    return obj
 
 if __name__ == '__main__':
     main()

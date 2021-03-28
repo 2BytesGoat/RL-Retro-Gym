@@ -1,0 +1,13 @@
+# actions selected base on investigation done in notebooks
+simplified_actions:
+    0: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] # x
+    1: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0] # x+Key.left
+    2: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0] # x+Key.right
+    # 3: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0] # Key.left
+    # 4: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0] # Key.right
+    # 5: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # do nothing
+
+training:
+    batch_size: 128
+    n_episodes: 250
+    n_steps: 2000

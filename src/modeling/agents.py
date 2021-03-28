@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from pathlib import Path
 from collections import namedtuple
 
-from . import autoencoders, backbone
+from . import backbone
 
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
@@ -23,34 +23,25 @@ EPS_END = 0.2
 EPS_DECAY = 2000
 
 class DQN:
-    def __init__(self, state_shape, action_shape, enc_type, enc_dim=100, memory_len=10000, batch_size=128, load_pretrained=None, ckpt_dst=''):
-        self.state_shape = state_shape
+    def __init__(self, action_shape, encoder, memory_len=10000, batch_size=128, load_path=None, ckpt_dst='', device=None):
         self.action_shape = action_shape
-        self.enc_type = enc_type
-        self.enc_dim = enc_dim
+        self.encoder = encoder
+        self.enc_dim = encoder.latent_dim
         self.memory_len = memory_len
         self.batch_size = batch_size
-        self.load_pretrained = load_pretrained
+        self.load_path = load_path
         self.ckpt_dst = Path(ckpt_dst)
-
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        # ===================Initialize state encoders=====================
-        if self.enc_type == 'pca':
-            self.encoder = autoencoders.PCA(self.state_shape, self.enc_dim)
-        elif self.enc_type == 'mlp':
-            self.encoder = autoencoders.MLP(self.state_shape, self.enc_dim)
+        self.device = device
 
         # ===================Initialize DQN backbone=====================
         self.target_net = backbone.MLP(self.enc_dim, self.action_shape).to(self.device)
         self.policy_net = backbone.MLP(self.enc_dim, self.action_shape).to(self.device)
         self.bb_optimizer = torch.optim.RMSprop(self.policy_net.parameters())
 
-        if self.load_pretrained and self.load_pretrained.exists():
-            self.encoder.load_state_dict(torch.load(self.load_pretrained / "best_encoder.pt"))
-            if (self.load_pretrained / "best_agent.pt").is_file():
-                self.target_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
-                self.policy_net.load_state_dict(torch.load(self.load_pretrained / "best_agent.pt"))
+        if self.load_path and self.load_path.exists():
+            if (self.load_path / "best_agent.pt").is_file():
+                self.target_net.load_state_dict(torch.load(self.load_path / "best_agent.pt"))
+                self.policy_net.load_state_dict(torch.load(self.load_path / "best_agent.pt"))
 
         # ===================Initialize replay buffer=====================
         self.memory = ReplayBuffer(memory_len)
@@ -62,11 +53,12 @@ class DQN:
                 math.exp(-1. * self.current_step / EPS_DECAY)
         self.current_step += 1
         if sample > eps_threshold and not greedy:
+            state = state.to(self.device)
             with torch.no_grad():
                 # encode states
-                enc_state = self.encoder.encode(state).to(self.device)
-                # take the action with the maximum return
-                return self.policy_net(enc_state).max(1)[1].view(1, 1)
+                enc_state = self.encoder.encode(state)
+            # take the action with the maximum return
+            return torch.argmax(self.policy_net(enc_state)).view(1, 1)
         else:
             return torch.tensor([[random.randrange(self.action_shape)]], device=self.device, dtype=torch.long)
 
@@ -83,8 +75,8 @@ class DQN:
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
                                             batch.next_state)), device=self.device, dtype=torch.bool)
         non_final_next_states = torch.cat([s for s in batch.next_state
-                                                    if s is not None])
-        state_batch = torch.cat(batch.state)
+                                                    if s is not None]).to(self.device)
+        state_batch = torch.cat(batch.state).to(self.device)
         action_batch = torch.cat(batch.action)
         reward_batch = torch.cat(batch.reward).to(self.device)
 
@@ -101,9 +93,9 @@ class DQN:
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.
         with torch.no_grad():
-            enc_n_state_batch = self.encoder(non_final_next_states)[0].to(self.device)
+            enc_n_state_batch = self.encoder.encode(non_final_next_states).to(self.device)
         next_state_values = torch.zeros(self.batch_size, device=self.device)
-        next_state_values[non_final_mask] = self.target_net(enc_n_state_batch).max(1)[0].detach()
+        next_state_values[non_final_mask] = self.target_net(enc_n_state_batch).max(1)[0]
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 

@@ -3,19 +3,18 @@ import torch.nn as nn
 import torch.nn.functional as F
 from piq import SSIMLoss # image quality losses
 
-def get_encoder(enc_type, input_shape, latent_dim, device):
+def get_encoder(enc_type, input_shape, latent_dim):
     if enc_type == 'pca':
-        encoder = PCA(input_shape, latent_dim, device)
+        encoder = PCA(input_shape, latent_dim)
     elif enc_type == 'mlp':
-        encoder = MLP(input_shape, latent_dim, device)
+        encoder = MLP(input_shape, latent_dim)
     return encoder
 
 class EncoderTemplate(nn.Module):
-    def __init__(self, input_shape, latent_dim=100, device='cuda'):
+    def __init__(self, input_shape, latent_dim=100):
         super().__init__()
         self.input_shape = input_shape
         self.latent_dim = latent_dim
-        self.device = device
         self.img_size = self._get_size_from_shape(input_shape)
 
         self.encoder = None
@@ -61,34 +60,34 @@ class EncoderTemplate(nn.Module):
 
 
 class PCA(EncoderTemplate):
-    def __init__(self, input_shape, latent_dim=100, device='cuda'):
+    def __init__(self, input_shape, latent_dim=100):
         super().__init__(input_shape, latent_dim)
         self.encoder = nn.Sequential(
             nn.Flatten(),
             nn.Linear(self.img_size, self.latent_dim),
-        ).to(device)
+        )
 
         self.decoder = nn.Sequential(
             nn.Linear(self.latent_dim, self.img_size),
-        ).to(device)
+        )
         self.optimizer = torch.optim.Adam(self.parameters())
 
 class MLP(EncoderTemplate):
-    def __init__(self, input_shape, latent_dim=100, device='cuda'):
+    def __init__(self, input_shape, latent_dim=100):
         super().__init__(input_shape, latent_dim)
         self.encoder = nn.Sequential(
             nn.Flatten(),
             nn.Linear(self.img_size, 512),
             nn.ReLU(),
             nn.Linear(512, self.latent_dim),
-        ).to(device)
+        )
 
         self.decoder = nn.Sequential(
             nn.Linear(self.latent_dim, 512),
             nn.ReLU(),
             nn.Linear(512, self.img_size),
             nn.Sigmoid()
-        ).to(device)
+        )
 
         self.optimizer = torch.optim.Adam(self.parameters())
         

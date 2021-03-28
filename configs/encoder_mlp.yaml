@@ -1,0 +1,11 @@
+encoder: 
+    enc_type: "mlp"
+    latent_dim: 100
+
+preprocessing: 
+    roi: [20, 70, 10, 190]
+    grayscale: true
+
+training:
+    batch_size: 128
+    epochs: 100

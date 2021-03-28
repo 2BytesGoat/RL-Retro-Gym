@@ -1,4 +1,3 @@
-import json
 import argparse
 import numpy as np
 from pathlib import Path
@@ -8,6 +7,7 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 from torchvision.transforms import ToPILImage
 
+from utils import yaml_config_hook
 from src.dataset import SuperMarioKartDataset
 from src.processing import get_transforms
 from src.modeling.autoencoders import get_encoder 
@@ -37,7 +37,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    config = load_json(args.config_path)
+    config = yaml_config_hook(args.config_path)
     
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -63,7 +63,7 @@ def main():
 
     # ===================Instantiate models=====================
     input_shape = train_set.image_shape
-    network = get_encoder(input_shape=input_shape, device=DEVICE, **config['encoder'])
+    network = get_encoder(input_shape=input_shape, **config['encoder']).to(DEVICE)
 
     if args.load_path and args.load_path.exists():
         network.load_state_dict(torch.load(args.load_path / "best_encoder.pt"))
@@ -114,16 +114,6 @@ def main():
         if cnt_bad_epocs == args.patience:
             print('Network is not improving. Stopping training...') 
             break
-
-def load_json(path):
-    """
-    Load json as python object
-    """
-    if not path.exists():
-        raise FileNotFoundError("Could not find json file: {}".format(path))
-    with open(path, "r") as f:
-        obj = json.load(f)
-    return obj
 
 if __name__ == '__main__':
     main()
