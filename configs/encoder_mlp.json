@@ -1,6 +1,6 @@
 {
     "encoder": {
-        "type": "pca",
+        "enc_type": "mlp",
         "latent_dim": 100
     },
 
@@ -11,7 +11,6 @@
 
     "training":{
         "batch_size": 128,
-        "n_episodes": 250,
-        "n_steps": 2000
+        "epochs": 100
     }
 }
