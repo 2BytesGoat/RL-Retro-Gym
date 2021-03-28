@@ -73,8 +73,6 @@ def main():
 
     for epoch in range(1, config['training']['epochs'] + 1):
         train_losses, valid_losses = [], []
-        epc_save_path = save_path / f'epoch_{epoch}'
-        epc_save_path.mkdir(exist_ok=True)
         # ===================Training=====================
         for x_t in train_loader:
             x_t = x_t.to(DEVICE)
@@ -88,8 +86,13 @@ def main():
             valid_losses.append(valid_loss)
 
             if not epoch % 5 and i < args.viz_samples: # saving samples
+                # create save path
+                epc_save_path = save_path / f'epoch_{epoch}'
+                epc_save_path.mkdir(exist_ok=True)
+                # format images
                 input_image = np.array(ToPILImage()(x_t.cpu()[0]))
                 decoded_image = np.array(ToPILImage()(decoding.cpu()[0]))
+                # merge images and save
                 merged_image = np.concatenate((input_image, decoded_image))
                 imsave(epc_save_path / f'result_{i}.png', merged_image)
 
