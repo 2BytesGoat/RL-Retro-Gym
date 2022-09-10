@@ -1,0 +1,144 @@
+SMK RAM Map.
+
+Made by MrL314, parts of data based on contributions from Roy and Datacrystal
+
+Known RAM: 38.24%
+Amount of addresses: 381 (294 similar)
+
+Address		Size		Description
+
+$7E:0036	1 Byte		Gamemode
+$7E:004C	6 Bytes 	Layer 1 X Position
+$7E:0052  	6 Bytes		Layer 1 Y Position
+$7E:0058	6 Bytes 	Mode 7 Center X position
+$7E:005E 	6 Bytes 	Mode 7 Center Y position
+$7E:0064	6 Bytes 	Layer 3 X Position
+$7E:006A	6 Bytes		Layer 3 Y Position
+$7E:0070	6 Bytes		Layer 4 X Position
+$7E:0076	6 Bytes	 	Layer 4 Y Position
+$7E:0095	1 Byte		Angle of Camera ($00 = north, $40 = eaat, $80 = south, $C0 = west)
+
+$7E:0101	1 Byte		Timer Milliseconds
+$7E:0102	1 Byte		Timer Seconds
+$7E:0103	2 Bytes		Timer Minutes (low byte used)
+
+$7E:0124	2 Bytes		Track number
+$7E:0126	2 Bytes		Theme number
+
+$7E:0148	1 Byte		Checkpoints in current race
+
+$7E:014A	2 Bytes		Y position kart must pass through in order to count a lap (Read by 808994 Subroutine)
+
+$7E:0154	2 Bytes		Player 1 Lives (+1)
+
+
+$7E:0160	2 Bytes		Screen Brightness
+
+$7E:0200	544 Bytes	OAM Table, before blank
+$7E:0420	544 Bytes	OAM Table, after blank
+
+$7E:0C00	128 Bytes	Top Line Sprite IDs (In race) (Timer, Item, etc.)
+$7E:0C80	128 Bytes	2nd Line Sprite IDs (In race) (Timer, Item, etc.)
+
+$7E:0D00	2 Bytes		Top Line Sprite Band read Offset
+$7E:0D02	2 Bytes		2nd Line Sprite Band Read Offset
+
+
+$7E:0F32	30 Bytes	Table of Lap "Finishing Times" for Player 1
+$7E:0F59	30 Bytes	Table of Lap "Finishing Times" for Player 2
+
+
+$7E:1000	256 Bytes	Player 1 Character Data Table
+$7E:1100	256 Bytes	Player 2/Relatively 7th Character Data Table ("Relatively 7th" meaning if Player 1 was not playing, this AI character would hold 7th throughout the race) 
+$7E:1200	256 Bytes	Relatively 6th  Character Data Table
+$7E:1300	256 Bytes	Relatively 5th  Character Data Table
+$7E:1400	256 Bytes	Relatively 4th  Character Data Table
+$7E:1500	256 Bytes	Relatively 3rd  Character Data Table
+$7E:1600	256 Bytes	Relatively 2nd  Character Data Table
+$7E:1700	256 Bytes	Relatively 1st  Character Data Table
+
+--------1000-17FF Table Data (WIP)------------------------------------------------------
+
+$7E:1x00	1 Byte		"Is a driver close behind?" ($00 = Yes, $B0 = No)
+$7E:1x01	1 Byte		Closest driver behind (given as offset of x for data table)
+$7E:1x02	1 Byte		"Is a driver close in front of?" ($00 = Yes, $B0 = No)
+$7E:1x03	1 Byte		Clsoest driver in front (given as offset for character table)
+
+$7E:1x10	1 Byte		Race Status
+$7E:1x14	1 Byte		Character Sprite (Redundant?)
+$7E:1x15	1 Byte		Character Palette ($01 = Bowser, $03 = Mario/Toad, $05 = Luigi/Yoshi, $07 = DK
+$7E:1x17	1 Byte		Driver X Position (Sub-pixel)
+$7E:1x18	2 Bytes		Driver X Position (Pixel) (NOTE: tileX = (this-1)/16)
+$7E:1x1A	1 Byte		Unused
+$7E:1x1B	1 Byte		Driver Y Position (Sub-pixel)
+$7E:1x1C	2 Bytes		Driver Y Position (Pixel) (NOTE: tileY = (this-1)/16)
+$7E:1x1E	1 Byte		Unused
+$7E:1x1F	2 Bytes		Jumping Flag ($00 = On ground, $01 = Off ground)
+
+$7E:1x22	2 Bytes		Driver X Speed
+$7E:1x24	2 Bytes		Driver Y Speed
+$7E:1x2A	1 Byte		Driver Angle (Sub-angle)
+$7E:1x2B	1 Byte		Driver Angle (Angle) (Mapped from 00-FF to 00-359)
+
+$7E:1x30	1 Byte		"Shrunken by mushroom?" ($00 = no, $80 = yes)
+
+$7E:1x40	1 Byte		Current Rank (Given as (Rank-1)*2)
+$7E:1x4E	1 Byte		Weight Class ($19 = Lightweight (K, T, P, Y), $1A = Midweight (M, L), $1B = Heavyweight (B, D))
+
+$7E:1x52	1 Byte		Collision Detection (set to $07 after collision, and decrements until $00)
+$7E:1x58	2 Bytes		Player Tile Position (Given in the 128x128 tile grid as (X+(128*Y))
+$7E:1x5C	2 Bytes		Timer for rightward "jolt"/"bounce" when hitting a wall/player
+$7E:1x5E	2 Bytes		Timer for leftward  "jolt"/"bounce" when hitting a wall/player
+
+$7E:1x61	1 Byte		Mole on kart flag
+$7E:1x6D	1 Byte		"Play "Victory" animation?" ($00 = Dont play, $80 = play)
+
+
+$7E:1x82	2 Bytes		Invulnerability Timer
+$7E:1x84	2 Bytes		Mini-Kart Timer
+$7E:1x86	2 Bytes		Star Timer
+
+$7E:1x9E	2 Bytes		Anglular Velocity (Increments with RIGHT held, decrements with LEFT held, $FFF9-$0007)
+
+$7E:1xA0	1 Byte		Kart Status ($00 = On ground, $02 = Jump/Hop/Ramp, $04 = Fallen off, $06 = In Lava, $08 = In water)
+$7E:1xAA	2 Bytes		Kart Angle relative to screen ($0000 = forward, $4000 = left, $8000 = backwards, $C000 = right)
+$7E:1xAE	1 Byte		Surface Type ($14: unused powerup square, $22: deep water, $40: mario circuit road, ghost valley road, used powerup square, rainbow road, $44: bowser castle road, $46: donut plains track, $4A: koopa beach sand, $4C: choco island track, $4E: ghost valley rough bit, bowser castle rough bit, ice, $50: choco island bridges, $52: choco island slightly rough bit of track, $54: mario circuit off road, $56: choco island off road, $58: snow, $5A: koopa beach bushes, donut plains grass, $5C: shallow-water, $5E: mud puddle)
+
+
+$7E:1xC0	1 Byte		Current Checkpoint Number
+$7E:1xC1	1 Byte		Current Lap (Given as Lap+128)
+$7E:1xC4	1 Byte		Use Item? ($00 = No, $80 = Yes)
+$7E:1xCA	2 Bytes		Boost Counter
+
+$7E:1xDE	1 Byte		"Turn Camera to face player?" (Only activates when race finishes)
+
+$7E:1xEA	2 Bytes		Absolute Speed
+
+$7E:1xF2	6 Bytes		Race Finish Time (in Decimal)
+$7E:1xF9	1 Byte		Max Lap Reached (Lap + 7E)
+
+-------------------------------------------------------------------------------------
+
+$7F:0000	16384 Bytes	Tile Sprite Map (128x128 Table)
+$7F:4000	4096 Bytes	Flow Map of "Forward" angles of map for each 2x2 tile area
+$7F:5000	4096 Bytes	Checkpoint data for each 2x2 tile area
+$7F:7000	1024 Bytes	? Block Sprite (Up, Down, Left, Right)
+$7F:7400	1024 Bytes	Used ? Block Sprite (Up, Down, Left, Right)
+$7F:7800	1024 Bytes	Speed Boost Sprite (Up, Down, Left, Right)
+$7F:7C00	256 Bytes	Wall Blocks Sprite
+$7F:7D00	64 Bytes	Ramp Left Sprite
+$7F:7D40	64 Bytes	Ramp Mid (Horizontal) Sprite
+$7F:7D80	64 Bytes	Ramp Right Sprite
+$7F:7DC0	64 Bytes	Ramp Top Sprite
+$7F:7E00	64 Bytes	Ramp Mid (Vertical) Sprite
+$7F:7E40	64 Bytes	Ramp Bottom Sprite
+$7F:7E80	256 Bytes	Oil Slick Sprite
+$7F:7F80	128 Bytes	Coin Sprite
+
+$7F:9000	4096 Bytes	arctan table (Input of X and Y values, presumably of player velocity?, output of angle)
+
+$7F:C000	16384 Bytes	Decompression Buffer
+
+
+
+

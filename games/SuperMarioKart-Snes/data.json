@@ -1,0 +1,112 @@
+{
+  "info": {
+    "game_mode": {
+      "address": 181,
+      "type": "|u1"
+    },
+    "curr_min": {
+      "address": 260,
+      "type": "<d2"
+    },
+    "curr_sec": {
+      "address": 258,
+      "type": "<d2"
+    },
+    "curr_miliSec": {
+      "address": 256,
+      "type": "<d2"
+    },
+    "lapsize": {
+      "address": 328,
+      "type": "|u1"
+    },
+    "total_checkpoints": {
+      "address": 328,
+      "type": "|u1"
+    },
+    "kart1_X": {
+      "address": 136,
+      "type": "<i2"
+    },
+    "kart1_Y": {
+      "address": 140,
+      "type": "<i2"
+    },
+    "kart1_direction": {
+      "address": 149,
+      "type": "|u1"
+    },
+    "kart1_speed": {
+      "address": 4330,
+      "type": "<i2"
+    },
+    "kart1_is_turned": {
+      "address": 267,
+      "type": "|u1"
+    },
+    "kart1_checkpoint": {
+      "address": 4316,
+      "type": "|u1"
+    },
+    "kart1_lap": {
+      "address": 4289,
+      "type": "|u1"
+    },
+    "kart1_rank": {
+      "address": 4160,
+      "type": "|u1"
+    },
+    "kart1_surface": {
+      "address": 4270,
+      "type": "|u1"
+    },
+    "kart1_state": {
+      "address": 4112,
+      "type": "|u1"
+    },
+    "kart1_frame": {
+      "address": 56,
+      "type": "<i2"
+    },
+    "kart1_item_box": {
+      "address": 3440,
+      "type": "|u1"
+    },
+    "kart1_coins": {
+      "address": 3584,
+      "type": "=u1"
+    },
+    "_lakitu_timer": {
+      "address": 7224,
+      "type": "|u1"
+    },
+    "_course": {
+      "address": 292,
+      "type": "|u1"
+    },
+    "_cameraX": {
+      "address": 141,
+      "type": "|u1"
+    },
+    "_driving_mode": {
+      "address": 58,
+      "type": "|u1"
+    },
+    "_some_kartX": {
+      "address": 4124,
+      "type": "|u1"
+    },
+    "_menu_option": {
+      "address": 133,
+      "type": "|u1"
+    },
+    "__state_timer": {
+      "address": 7660,
+      "type": "|u1"
+    },
+    "__state_timer_high": {
+      "address": 7661,
+      "type": "|u1"
+    }
+  }
+}
