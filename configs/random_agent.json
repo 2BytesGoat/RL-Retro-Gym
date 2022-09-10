@@ -1,0 +1,9 @@
+{
+    "preprocessing": {
+        "grayscale": false,
+        "cropper": true,
+        "cropper_roi": [0, 112, 0, 256],
+        "resize": false,
+        "resize_shape": []
+    }
+}

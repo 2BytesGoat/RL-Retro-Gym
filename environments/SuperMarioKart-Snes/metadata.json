@@ -1,8 +1,0 @@
-{
-  "default_state": "1P_DK_Shroom_R1",
-  "whitelist": {
-    "data.json": [
-      "suspicious type >u2 for lives"
-    ]
-  }
-}

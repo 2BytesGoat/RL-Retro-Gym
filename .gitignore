@@ -1,15 +1,6 @@
-.env
-.vscode
-
 __pycache__
 
-# roms data
-*.sfc
-*.sha
+*.lnk
 
-# dataset files
-gameplay_rec/*
-data/*
-checkpoints/*
-
-*.zip
+retro_integration_ui/
+games/
